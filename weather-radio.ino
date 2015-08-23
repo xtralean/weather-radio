@@ -54,12 +54,16 @@ void setup()
     Spark.function("radio", radioControl);
   }
 
+  Time.zone(-4);
+
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
 
 int lastSecond = -1;
 int lastMinute = -1;
+bool rainbowOn = false;
+int rainbowColor = 0;
 
 void loop()
 {
@@ -74,19 +78,30 @@ void loop()
     }
   }
 
-  rainbow(200);
+  // process these tasks once a minute
+  if (lastMinute != Time.minute())
+  {
+    if (Time.hour() >= 20 || Time.hour() < 1)
+    {
+      rainbowOn = true;
+    }
+    else
+    {
+      rainbowOn = false;
+      for(int i=0; i<strip.numPixels(); i++) {
+        strip.setPixelColor(i, 0);
+      }
+      strip.show();
+    }
+  }
 
-}
-
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) {
-    for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+j) & 255));
+  if (rainbowOn)
+  {
+    for(int i=0; i<strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel((i+(rainbowColor>>5)) & 255));
     }
     strip.show();
-    delay(wait);
+    rainbowColor++;
   }
 }
 
